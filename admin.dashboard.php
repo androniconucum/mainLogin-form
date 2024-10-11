@@ -11,8 +11,20 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-// Fetch all users and admins from the database
-$query = "SELECT * FROM users WHERE role != 'admin'"; // Exclude superadmin
+// Pagination setup
+$limit = 1; // Number of records per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1; // Current page
+$offset = ($page - 1) * $limit;
+
+// Fetch total number of users
+$total_query = "SELECT COUNT(*) as total FROM users WHERE role != 'admin'";
+$total_result = mysqli_query($conn, $total_query);
+$total_row = mysqli_fetch_assoc($total_result);
+$total_users = $total_row['total'];
+$total_pages = ceil($total_users / $limit);
+
+// Fetch users for the current page
+$query = "SELECT * FROM users WHERE role != 'admin' LIMIT $limit OFFSET $offset";
 $result = mysqli_query($conn, $query);
 
 // Handle account actions (delete, promote to admin, lock, unlock)
@@ -101,8 +113,30 @@ if (isset($_POST['action']) && isset($_POST['user_id'])) {
         </table>
     </div>
 
-    <!-- Logout button -->
+    <!-- Pagination -->
     <div class="mt-5">
+        <nav class="flex justify-end">
+            <ul class="flex gap-1">
+                <?php if ($page > 1): ?>
+                    <li>
+                        <a href="?page=<?= $page - 1; ?>" class="bg-[#9fa1dd] text-[#080914] px-3 py-1 rounded">Previous</a>
+                    </li>
+                <?php endif; ?>
+                <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                    <li>
+                        <a href="?page=<?= $i; ?>" class="bg-[#9fa1dd] text-[#080914] px-3 py-1 rounded <?= $i === $page ? 'font-bold' : ''; ?>"><?= $i; ?></a>
+                    </li>
+                <?php endfor; ?>
+                <?php if ($page < $total_pages): ?>
+                    <li>
+                        <a href="?page=<?= $page + 1; ?>" class="bg-[#9fa1dd] text-[#080914] px-3 py-1 rounded">Next</a>
+                    </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+    </div>                 
+    <!-- Logout button -->
+    <div class="flex justify-center mt-10">
         <form method="POST" action="logout.php">
             <button type="submit" class="bg-red-600 text-[#dedeef] px-4 py-2 rounded">Logout</button>
         </form>
