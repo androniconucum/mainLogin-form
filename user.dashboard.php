@@ -10,5 +10,10 @@
     <div class=" flex justify-center text-center h-screen ">
         <p class="">Hello User</p>
     </div>
+    <div class="mt-5">
+        <form method="POST" action="logout.php">
+            <button type="submit" class="bg-red-600 text-[#dedeef] px-4 py-2 rounded">Logout</button>
+        </form>
+    </div>
 </body>
 </html>
